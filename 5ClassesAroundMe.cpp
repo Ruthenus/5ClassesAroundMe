@@ -1264,7 +1264,7 @@ public:
         cout << "\tstring skyObject = \""
             << telescope->GetSkyObject() << "\";\n";
     }
-    
+
 
     static void DisplayWaterBottleFields(const WaterBottle* waterbottle)
     {
@@ -1278,16 +1278,16 @@ public:
         cout << "{\n";
         cout << "private:\n";
         cout << "\tstring brand = \"" << waterbottle->GetBrand() << "\";\n";
-        cout << "\tstring producer = \"" 
+        cout << "\tstring producer = \""
             << waterbottle->GetProducer() << "\";\n";
         cout << "\tfloat capacity = " << waterbottle->GetCapacity() << ";\n";
-        cout << "\tfloat currentVolume = " 
+        cout << "\tfloat currentVolume = "
             << waterbottle->GetCurrentVolume() << ";\n";
-        cout << "\tstring expirationDate = \"" 
+        cout << "\tstring expirationDate = \""
             << waterbottle->GetExpirationDate() << "\";\n";
-        cout << "\tstring mineralization = \"" 
+        cout << "\tstring mineralization = \""
             << waterbottle->GetMineralization() << "\";\n";
-        cout << "\tstring material = \"" 
+        cout << "\tstring material = \""
             << waterbottle->GetMaterial() << "\";\n";
         cout << "\tbool isExpired = "
             << (waterbottle->GetIsExpired() ? "true" : "false") << ";\n";
@@ -1314,7 +1314,7 @@ public:
         cout << "\tstring make = \"" << car->GetMake() << "\";\n";
         cout << "\tstring model = \"" << car->GetModel() << "\";\n";
         cout << "\tunsigned short year = " << car->GetYear() << ";\n";
-        cout << "\tunsigned int odometerReading = " 
+        cout << "\tunsigned int odometerReading = "
             << car->GetOdometer() << ";\n";
         cout << "\tfloat fuelLevel = " << car->GetFuelLevel() << ";\n";
     }
