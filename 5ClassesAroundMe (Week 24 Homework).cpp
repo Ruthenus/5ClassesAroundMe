@@ -32,7 +32,7 @@ public:
 
         cout << "На скільки ват лампочки? ";
         cin >> lampPower;
-        if (cin.fail()) exit(1);
+        if (cin.fail()) exit(1);  // або через throw("FATAL ERROR");
         lampPower = abs(lampPower);  // виправлення від'ємного числа
         if (lampPower > 60) {
             cout << "Забагато. Не більше шістдесяти! 40 Вт достатньо.\n";
@@ -144,82 +144,6 @@ public:
             PrintInfo();
         }
     }
-
-
-    // Методи встановлення значень приватних полів
-
-    Chandelier& SetStyle(string style)
-    {
-        if (style.empty()) throw string("Бажано визначити стиль люстри!");
-        this->style = style;
-        return *this;
-    }
-
-    Chandelier& SetLampPower(unsigned short lampPower)
-    {
-        lampPower = abs(lampPower);
-        if (lampPower == 0 || lampPower > 60)
-            throw string("Раджу лампи розжарювання потужністю 40 або 60 Вт!");
-        this->lampPower = lampPower;
-        return *this;
-    }
-
-    Chandelier& SetTotalCups(unsigned short totalCups)
-    {
-        totalCups = abs(totalCups);
-        if (totalCups == 0)
-            throw string("Люстра повинна мати хоча б одну чашечку!");
-        this->totalCups = totalCups;
-        return *this;
-    }
-
-    Chandelier& SetRightSideLamps(unsigned short rightSideLamps)
-    {
-        rightSideLamps = abs(rightSideLamps);
-        if (rightSideLamps > totalCups / 2 + (totalCups % 2))
-            throw string("Занадто багато ламп з правого боку люстри!");
-        this->rightSideLamps = rightSideLamps;
-        return *this;
-    }
-
-    Chandelier& SetLeftSideLamps(unsigned short leftSideLamps)
-    {
-        leftSideLamps = abs(leftSideLamps);
-        if (leftSideLamps > totalCups / 2)
-            throw string("Занадто багато ламп з лівого боку люстри!");
-        this->leftSideLamps = leftSideLamps;
-        return *this;
-    }
-
-    Chandelier& SetRightSideChandelierOn(bool rightSideChandelierOn)
-    {
-        this->rightSideChandelierOn = rightSideChandelierOn;
-        return *this;
-    }
-
-    Chandelier& SetLeftSideChandelierOn(bool leftSideChandelierOn)
-    {
-        this->leftSideChandelierOn = leftSideChandelierOn;
-        return *this;
-    }
-
-
-    // Методи одержання значень приватних полів
-
-    string GetStyle() const { return style; }
-
-    unsigned short GetLampPower() const { return lampPower; }
-
-    unsigned short GetTotalCups() const { return totalCups; }
-
-    unsigned short GetRightSideLamps() const { return rightSideLamps; }
-
-    unsigned short GetLeftSideLamps() const { return leftSideLamps; }
-
-    bool GetRightSideChandelierOn() const { return rightSideChandelierOn; }
-
-    bool GetLeftSideChandelierOn() const { return leftSideChandelierOn; }
-
 };
 
 
@@ -233,11 +157,10 @@ private:
     bool is24HourFormat = false;
     bool isAM = true;  // для визначення AM / PM у 12-годинному форматі
     // Перевірка, чи використовується перехід на літній або зимовий час:
-    // bool toSummer = false;  // true, щоб перевести на 1 годину вперед
+    bool toSummer = false;  // true, щоб перевести на 1 годину вперед
     unsigned short alarmHours = 5;     // година сигналу будильника
     unsigned short alarmMinutes = 15;  // хвилина сигналу будильника
-    bool alarmIsAM = false;  // ранковий чи вечірній час пробудження
-    bool alarmSet = true;    // будильник поставлено
+    bool alarmSet = true;  // бульник поставлено
 
 public:
     // Метод для встановлення часу на годиннику за допомогою cin
@@ -335,8 +258,8 @@ public:
                     << " після полудня (post meridiem) (A/P) : ";
                 cin >> period;
 
-                if (period == 'A' || period == 'a') alarmIsAM = true;
-                else if (period == 'P' || period == 'p') alarmIsAM = false;
+                if (period == 'A' || period == 'a') isAM = true;
+                else if (period == 'P' || period == 'p') isAM = false;
                 else {
                     cout << "\nПомилка: введіть A або P для AM/PM.\n";
                     continue;
@@ -352,9 +275,7 @@ public:
     }
 
 
-    // Метод, що реалізує перехід на літній/зимовий час.
-    // Можна було б перевантажити метод: з параметром
-    // або без параметра, використовуючи змінну класу.
+    // Метод, що реалізує перехід на літній/зимовий час
     void MoveHands(bool toSummer)  // виклик з false - на зимовий час
     {
         if (toSummer) {  // в останню неділю березня
@@ -366,8 +287,8 @@ public:
                 // hours % 12 перетворює час у діапазон від 0 до 11
                 // (оскільки у 12-год форматі немає значення "0", а є "12")
 
-                // Перехід AM/PM або навпаки, якщо нова година — 12
-                if (hours == 12) isAM = !isAM;
+                if (hours == 13) hours = 1;
+                // після 12 години знову буде 1, а не 13 година
             }
             cout << "\n\nПерехід на літній час (+1 година)\n";
         }
@@ -379,15 +300,7 @@ public:
                 // перетвориться на 23 годину.
             }
             else {
-                // Зсув назад
-                if (hours == 1) {
-                    hours = 12;
-                    isAM = !isAM;  // Перехід на іншу половину доби
-                }
-                else {
-                    hours--;
-                    if (hours == 11) isAM = !isAM;
-                }
+                hours = (hours == 1) ? 12 : hours - 1;
             }
             cout << "\n\nПерехід на зимовий час (-1 година)\n";
         }
@@ -424,7 +337,7 @@ public:
             cout << " | Будильник: "
                 << setw(2) << setfill(' ') << alarmHours << ":"
                 << setw(2) << setfill('0') << alarmMinutes;
-            if (!is24HourFormat) cout << (alarmIsAM ? " AM" : " PM");
+            if (!is24HourFormat) cout << (isAM ? " AM" : " PM");
         }
 
         cout << flush;  // flush гарантує миттєвий вивід змін
@@ -443,22 +356,22 @@ public:
                 minutes = 0;
                 hours++;
 
-                if (!is24HourFormat) { // годинник у 12-годинному форматі
+                if (!is24HourFormat) {
+                    // Якщо годинник у 12-годинному форматі
+                    if (hours > 12) hours = 1;  // після 12 йде 1
                     // Зміна періоду AM/PM опівдні та опівночі
                     if (hours == 12) isAM = !isAM;
-                    if (hours > 12) hours = 1;  // після 12 йде 1
                 }
                 else hours %= 24;  // 24-годинний формат: нормалізація
             }
         }
 
         // Перевірка на час будильника
-        if (alarmSet && hours == alarmHours &&
-            minutes == alarmMinutes && seconds == 0 &&
-            (is24HourFormat || !is24HourFormat && isAM == alarmIsAM)) {
+        if (alarmSet && hours == alarmHours
+            && minutes == alarmMinutes && seconds == 0) {
             cout << "\n\n\t* Дзвенить будильник! *" << "\n\n";
             // Генеруємо звуковий сигнал
-            Beep(1000, 2000);  // 1000 Гц, тривалість 2 с
+            Beep(1000, 15000);  // 1000 Гц, тривалість 15 с
         }
     }
 
@@ -474,111 +387,6 @@ public:
             Sleep(1000);
         }
     }
-
-
-    // Методи встановлення значень приватних полів
-
-    AlarmClock& SetHours(unsigned short hours)
-    {
-        if (this->is24HourFormat && (hours >= 0 && hours <= 23) ||
-            !(this->is24HourFormat) && (hours >= 1 && hours <= 12))
-            this->hours = hours;
-        else throw string("Невірне значення годин!");
-        return *this;
-    }
-
-    AlarmClock& SetMinutes(unsigned short minutes)
-    {
-        if (minutes >= 0 && minutes < 60) this->minutes = minutes;
-        else throw string("Невірне значення хвилин!");
-        return *this;
-    }
-
-    AlarmClock& SetSeconds(unsigned short seconds = 0)
-    {
-        if (seconds >= 0 && seconds < 60) this->seconds = seconds;
-        else throw string("Невірне значення секунд!");
-        return *this;
-    }
-
-    AlarmClock& Set24HourFormat(bool is24HourFormat)
-    {
-        this->is24HourFormat = is24HourFormat;
-        if (this->is24HourFormat) {
-            this->isAM = true;
-            this->alarmIsAM = true;
-        }
-        else {
-            // Нормалізація для 12-годинного формату
-            if (this->hours == 0) this->hours = 12;
-            else if (this->hours > 12) this->hours = this->hours % 12;
-            if (this->alarmHours == 0) this->alarmHours = 12;
-            else if (this->alarmHours > 12)
-                this->alarmHours = this->alarmHours % 12;
-        }
-        return *this;
-    }
-
-    AlarmClock& SetAM(bool isAM)
-    {
-        if (!this->is24HourFormat) this->isAM = isAM;
-        else
-            throw string("Неможливо встановити AM/PM у 24-годинному форматі!");
-        return *this;
-    }
-
-    AlarmClock& SetAlarmHours(unsigned short alarmHours)
-    {
-        if (this->is24HourFormat && (alarmHours >= 0 && alarmHours <= 23) ||
-            !(this->is24HourFormat) && (alarmHours >= 1 && alarmHours <= 12))
-            this->alarmHours = alarmHours;
-        else throw string("Невірне значення годин будильника!");
-        return *this;
-    }
-
-    AlarmClock& SetAlarmMinutes(unsigned short alarmMinutes)
-    {
-        if (alarmMinutes >= 0 && alarmMinutes < 60)
-            this->alarmMinutes = alarmMinutes;
-        else throw string("Невірне значення хвилин будильника!");
-        return *this;
-    }
-
-    AlarmClock& SetAlarmActive(bool alarmSet)
-    {
-        this->alarmSet = alarmSet;
-        return *this;
-    }
-
-    AlarmClock& SetAlarmAM(bool alarmIsAM)
-    {
-        if (!this->is24HourFormat) this->alarmIsAM = alarmIsAM;
-        else
-            throw string("Неможливо встановити AM/PM у 24-годинному форматі!");
-        return *this;
-    }
-
-
-    // Методи одержання значень приватних полів
-
-    unsigned short GetHours() const { return hours; }
-
-    unsigned short GetMinutes() const { return minutes; }
-
-    unsigned short GetSeconds() const { return seconds; }
-
-    bool Get24HourFormat() const { return is24HourFormat; }
-
-    bool GetIsAM() const { return isAM; }
-
-    unsigned short GetAlarmHours() const { return alarmHours; }
-
-    unsigned short GetAlarmMinutes() const { return alarmMinutes; }
-
-    bool GetAlarmActive() const { return alarmSet; }
-
-    bool GetAlarmIsAM() const { return alarmIsAM; }
-
 };
 
 
@@ -683,109 +491,6 @@ public:
             "ще не виконано!") << "\n";
         cout << "\n\nКОМЕНТАР: " << comment << "\n";
     }
-
-
-    // Методи встановлення значень приватних полів
-
-    void SetBrand(const string& brand)
-    {
-        if (brand.empty()) throw string("Бажано зазначити бренд телескопа!");
-        this->brand = brand;
-    }
-
-    void SetModel(const string& model)
-    {
-        if (model.empty()) throw string("Бажано зазначити модель телескопа!");
-        this->model = model;
-    }
-
-    void SetOpticalDesign(const string& opticalDesign)
-    {
-        if (opticalDesign.empty()) throw string("Рефрактор чи рефлектор?..");
-        this->opticalDesign = opticalDesign;
-    }
-
-    void SetAperture(const string& aperture)
-    {
-        if (aperture.empty())
-            throw string("Будь ласка, вкажіть діаметр об'єктива в міліметрах");
-        this->aperture = aperture;
-    }
-
-    void SetFocalLength(const string& focalLength)
-    {
-        if (focalLength.empty())
-            throw string("Будь ласка, вкажіть фокусну відстань телескопа "
-                "в міліметрах, сантиметрах, метрах!..");
-        this->focalLength = focalLength;
-    }
-
-    void SetMountType(const string& mountType)
-    {
-        if (mountType.empty())
-            throw string("Монтування азимутальне, екваторіальне, Добсона, "
-                "виделкове, екваторіально-азимутальне?..");
-        this->mountType = mountType;
-    }
-
-    void SetEyepiece(const string& eyepiece)
-    {
-        if (eyepiece.empty()) throw string("Спробуйте з комплектним окуляром");
-        this->eyepiece = eyepiece;
-    }
-
-    void SetterFilter(const string& filter)
-    {
-        if (filter.empty())
-            throw string("Передивіться свій новий набір світлофільтрів.");
-        this->filter = filter;
-    }
-
-    void SetIsAimed(bool isAimed = true)
-    {
-        this->isAimed = isAimed;
-    }
-
-    void SetIsFocused(bool isFocused = true)
-    {
-        this->isFocused = isFocused;
-    }
-
-    void SetSkyObject(const string& skyObject)
-    {
-        if ((skyObject == "Сонце" || skyObject == "The Sun" ||
-            skyObject == "Sun") && (this->filter != "Сонячний"))
-            throw string("Ніколи не дивіться на Сонце без спеціального "
-                "сонячного світлофільтра — це дуже небезпечно!"
-                " Найкраще — використовуйте метод проєкції на екран.");
-        this->skyObject = skyObject;
-    }
-
-
-    // Методи одержання значень приватних полів
-
-    string GetBrand() const { return brand; }
-
-    string GetModel() const { return model; }
-
-    string GetOpticalDesign() const { return opticalDesign; }
-
-    string GetAperture() const { return aperture; }
-
-    string GetFocalLength() const { return focalLength; }
-
-    string GetMountType() const { return mountType; }
-
-    string GetEyepiece() const { return eyepiece; }
-
-    string GetFilter() const { return filter; }
-
-    bool GetIsAimed() const { return isAimed; }
-
-    bool GetIsFocused() const { return isFocused; }
-
-    string GetSkyObject() const { return skyObject; }
-
 };
 
 
@@ -794,7 +499,7 @@ class WaterBottle  // Цей клас я почав писати до аварі
 private:
     string brand = "Моршинська";
     string producer = "Моршинський завод мінеральних вод \"Оскар\"";
-    float capacity = 6.0f;                  // об'єм бутеля води
+    float capacity = 6.0;                   // об'єм бутеля води
     float currentVolume = capacity;         // поточний рівень води
     string expirationDate = "02.11.25";     // кінцева дата споживання
     string mineralization = "0,1-0,4 г/л";  // мінералізація води
@@ -856,7 +561,7 @@ public:
         int todayMonth = localTime.tm_mon + 1; // tm_mon починається з 0
         int todayYear = localTime.tm_year + 1900; // відлік з 1900
 
-        // Перетворюємо кінцеву дату споживання, використовуючи метод для
+        // Перетворюємо кінцеву дату споживання, використовуючи метод для 
         // отримання підрядка та функцію для перетворення рядка на число
         int day = stoi(expirationDate.substr(0, 2));
         int month = stoi(expirationDate.substr(3, 2));
@@ -887,10 +592,10 @@ public:
     // Метод для наливання води (по 3 л за раз)
     void PourWater()
     {
-        if (isOpened && currentVolume >= 3.0)
+        if (isOpened && currentVolume >= 3)
         {
             isBeingPoured = true;
-            currentVolume -= 3.0;
+            currentVolume -= 3;
         }
         else
         {
@@ -927,106 +632,6 @@ public:
         cout << (isBeingPoured ? "Наливаємо воду!" : "") << "\n";
         cout << "\nКОМЕНТАР: " << comment << "\n";
     }
-
-
-    // Методи встановлення значень приватних полів
-
-    void SetBrand(const string& brand)
-    {
-        if (!brand.empty()) this->brand = brand;
-    }
-
-    void SetProducer(const string& producer)
-    {
-        if (!producer.empty()) this->producer = producer;
-    }
-
-    void SetCapacity(float capacity)
-    {
-        if (capacity < 1.0 || capacity > 25.0)
-            throw string("Об'єм бутеля має бути в межах 1 - 25 літрів!");
-        this->capacity = capacity;
-        if (this->currentVolume > this->capacity)
-            this->currentVolume = this->capacity;
-    }
-
-    void SetCurrentVolume(float currentVolume)
-    {
-        if (currentVolume < 0 || currentVolume > this->capacity)
-            throw string("Поточний об'єм води в літрах має бути в межах "
-                "від 0 до максимальної ємності бутеля!");
-        this->currentVolume = currentVolume;
-    }
-
-    void SetExpirationDate(const string& expirationDate)
-    {
-        if (expirationDate.length() != 8 || expirationDate[2] != '.' ||
-            expirationDate[5] != '.')
-            throw string("Дата має бути вказана щонайменше у форматі"
-                " ДД.ММ.РР та проходити повну валідацію!");
-        this->expirationDate = expirationDate;
-    }
-
-    void SetMineralization(const string& mineralization)
-    {
-        if (!mineralization.empty()) this->mineralization = mineralization;
-    }
-
-    void SetMaterial(const string& material)
-    {
-        if (material != "Пластик" && material != "пластик" &&
-            material != "Скло" && material != "скло" &&
-            material != "Нержавіюча сталь" && material != "нержавіюча сталь" &&
-            material != "Харчовий пластик" && material != "харчовий пластик")
-            throw string("Виберіть придатний матеріал для зберігання води!");
-        this->material = material;
-    }
-
-    void SetIsExpired(bool isExpired = true)
-    {
-        this->isExpired = isExpired;
-    }
-
-    void SetIsOpened(bool isOpened = true)
-    {
-        this->isOpened = isOpened;
-    }
-
-    void SetIsBeingPoured(bool isBeingPoured = true)
-    {
-        this->isBeingPoured = isBeingPoured;
-    }
-
-    void SetIsWiped(bool isWiped = true)
-    {
-        this->isWiped = isWiped;
-    }
-
-
-    // Методи одержання значень приватних полів
-
-    string GetBrand() const { return brand; }
-
-    string GetProducer() const { return producer; }
-
-    float GetCapacity() const { return capacity; }
-
-    float GetCurrentVolume() const { return currentVolume; }
-
-    string GetExpirationDate() const { return expirationDate; }
-
-    string GetMineralization() const { return mineralization; }
-
-    string GetMaterial() const { return material; }
-
-    bool GetIsExpired() const { return isExpired; }
-
-    bool GetIsOpened() const { return isOpened; }
-
-    bool GetIsBeingPoured() const { return isBeingPoured; }
-
-    bool GetIsWiped() const { return isWiped; }
-
 };
 
 
@@ -1037,7 +642,7 @@ private:
     string model = "S-Class";          // модель
     unsigned short year = 2025;        // рік випуску
     unsigned int odometerReading = 0;  // пробіг за одометром
-    float fuelLevel = 57.0f;              // рівень пального
+    float fuelLevel = 57;              // рівень пального
 
 public:
     // Метод для введення даних автомобіля від користувача
@@ -1123,206 +728,10 @@ public:
             cout << "You must add a positive amount of fuel!" << "\n";
         }
     }
-
-
-    // Прості методи встановлення значень приватних полів
-
-    void setMake(const string& m)
-    {
-        make = m;
-    }
-
-    void setModel(const string& mod)
-    {
-        model = mod;
-    }
-
-    void setYear(unsigned short y)
-    {
-        year = y;
-    }
-
-    void setOdometerReading(unsigned int odo)
-    {
-        odometerReading = odo;
-    }
-
-    void setFuelLevel(float f)
-    {
-        fuelLevel = f;
-    }
-
-
-    // Методи одержання значень приватних полів
-
-    string GetMake() const { return make; }
-
-    string GetModel() const { return model; }
-
-    unsigned short GetYear() const { return year; }
-
-    unsigned int GetOdometer() const { return odometerReading; }
-
-    float GetFuelLevel() const { return fuelLevel; }
-
 };
 
 
-class GetterShowCaseTask
-{
-public:
-
-    static void DisplayChandelierFields(const Chandelier* chandelier)
-    {  // VCR003 Функцию 'DisplayChandelierFields' можно сделать статической
-
-        if (!chandelier) {
-            cout << "Об'єкт Chandelier не знайдено за вказаною адресою!\n";
-            return;
-        }
-
-        cout << "\n\n\n\t==== Chandelier Object State ====\n\n";
-        cout << "class Chandelier\n";
-        cout << "{\n";
-        cout << "private:\n";
-        cout << "\tstring style = \"" << chandelier->GetStyle() << "\";\n";
-        cout << "\tunsigned short lampPower = "
-            << chandelier->GetLampPower() << ";\n";
-        cout << "\tunsigned short totalCups = "
-            << chandelier->GetTotalCups() << ";\n";
-        cout << "\tunsigned short rightSideLamps = "
-            << chandelier->GetRightSideLamps() << ";\n";
-        cout << "\tunsigned short leftSideLamps = "
-            << chandelier->GetLeftSideLamps() << ";\n";
-        cout << "\tbool rightSideChandelierOn = "
-            << (chandelier->GetRightSideChandelierOn() ? "true" : "false")
-            << ";\n";
-        cout << "\tbool leftSideChandelierOn = "
-            << (chandelier->GetLeftSideChandelierOn() ? "true" : "false")
-            << ";\n";
-    }
-
-
-    static void DisplayAlarmClockFields(const AlarmClock* alarmClock)
-    {
-        if (!alarmClock) {
-            cout << "Об'єкт AlarmClock не знайдено за вказаною адресою!\n";
-            return;
-        }
-
-        cout << "\n\n\n\t==== AlarmClock Object State ====\n\n";
-        cout << "class AlarmClock\n";
-        cout << "{\n";
-        cout << "private:\n";
-        cout << "\tunsigned short hours = " << alarmClock->GetHours() << ";\n";
-        cout << "\tunsigned short minutes = "
-            << alarmClock->GetMinutes() << ";\n";
-        cout << "\tunsigned short seconds = "
-            << alarmClock->GetSeconds() << ";\n";
-        cout << "\tbool is24HourFormat = "
-            << (alarmClock->Get24HourFormat() ? "true" : "false") << ";\n";
-        cout << "\tbool isAM = "
-            << (alarmClock->GetIsAM() ? "true" : "false") << ";\n";
-        cout << "\tunsigned short alarmHours = "
-            << alarmClock->GetAlarmHours() << ";\n";
-        cout << "\tunsigned short alarmMinutes = "
-            << alarmClock->GetAlarmMinutes() << ";\n";
-        cout << "\tbool alarmIsAm = "
-            << (alarmClock->GetAlarmIsAM() ? "true" : "false") << ";\n";
-        cout << "\tbool alarmSet = "
-            << (alarmClock->GetAlarmActive() ? "true" : "false") << ";\n";
-    }
-
-
-    static void DisplayTelescopeFields(const Telescope* telescope)
-    {
-        if (!telescope) {
-            cout << "Об'єкт Telescope не знайдено за вказаною адресою!\n";
-            return;
-        }
-
-        cout << "\n\n\n\t==== Telescope Object State ====\n\n";
-        cout << "class Telescope\n";
-        cout << "{\n";
-        cout << "private:\n";
-        cout << "\tstring brand = \"" << telescope->GetBrand() << "\";\n";
-        cout << "\tstring model = \"" << telescope->GetModel() << "\";\n";
-        cout << "\tstring opticalDesign = \""
-            << telescope->GetOpticalDesign() << "\";\n";
-        cout << "\tstring aperture = \""
-            << telescope->GetAperture() << "\";\n";
-        cout << "\tstring focalLength = \""
-            << telescope->GetFocalLength() << "\";\n";
-        cout << "\tstring mountType = \""
-            << telescope->GetMountType() << "\";\n";
-        cout << "\tstring eyepiece = \""
-            << telescope->GetEyepiece() << "\";\n";
-        cout << "\tstring filter = \"" << telescope->GetFilter() << "\";\n";
-        cout << "\tbool isAimed = "
-            << (telescope->GetIsAimed() ? "true" : "false") << ";\n";
-        cout << "\tbool isFocused = "
-            << (telescope->GetIsFocused() ? "true" : "false") << ";\n";
-        cout << "\tstring skyObject = \""
-            << telescope->GetSkyObject() << "\";\n";
-    }
-    
-
-    static void DisplayWaterBottleFields(const WaterBottle* waterbottle)
-    {
-        if (!waterbottle) {
-            cout << "Об'єкт WaterBottle не знайдено за вказаною адресою!\n";
-            return;
-        }
-
-        cout << "\n\n\n\t==== WaterBottle Object State ====\n\n";
-        cout << "class WaterBottle\n";
-        cout << "{\n";
-        cout << "private:\n";
-        cout << "\tstring brand = \"" << waterbottle->GetBrand() << "\";\n";
-        cout << "\tstring producer = \"" 
-            << waterbottle->GetProducer() << "\";\n";
-        cout << "\tfloat capacity = " << waterbottle->GetCapacity() << ";\n";
-        cout << "\tfloat currentVolume = " 
-            << waterbottle->GetCurrentVolume() << ";\n";
-        cout << "\tstring expirationDate = \"" 
-            << waterbottle->GetExpirationDate() << "\";\n";
-        cout << "\tstring mineralization = \"" 
-            << waterbottle->GetMineralization() << "\";\n";
-        cout << "\tstring material = \"" 
-            << waterbottle->GetMaterial() << "\";\n";
-        cout << "\tbool isExpired = "
-            << (waterbottle->GetIsExpired() ? "true" : "false") << ";\n";
-        cout << "\tbool isOpened = "
-            << (waterbottle->GetIsOpened() ? "true" : "false") << ";\n";
-        cout << "\tbool isBeingPoured = "
-            << (waterbottle->GetIsBeingPoured() ? "true" : "false") << ";\n";
-        cout << "\tbool isWiped = "
-            << (waterbottle->GetIsWiped() ? "true" : "false") << ";\n";
-    }
-
-
-    static void DisplayCarFields(const Car* car)
-    {
-        if (!car) {
-            cout << "Об'єкт Car не знайдено за вказаною адресою!\n";
-            return;
-        }
-
-        cout << "\n\n\n\t==== Car Object State ====\n\n";
-        cout << "class Car\n";
-        cout << "{\n";
-        cout << "private:\n";
-        cout << "\tstring make = \"" << car->GetMake() << "\";\n";
-        cout << "\tstring model = \"" << car->GetModel() << "\";\n";
-        cout << "\tunsigned short year = " << car->GetYear() << ";\n";
-        cout << "\tunsigned int odometerReading = " 
-            << car->GetOdometer() << ";\n";
-        cout << "\tfloat fuelLevel = " << car->GetFuelLevel() << ";\n";
-    }
-};
-
-
-int main()
-{
+int main() {
     srand(static_cast<unsigned>(time(nullptr)));  // srand(time(0));
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
@@ -1337,35 +746,6 @@ int main()
     lustra.SwitchOffRightLamps(); lustra.PrintInfo(); Sleep(4000);
     lustra.TransmitLightSignals();
 
-    Chandelier lustra2;
-    try {
-        lustra2.SetLampPower(60).SetStyle("Модерн").SetTotalCups(9).
-            SetRightSideLamps(4).SetRightSideChandelierOn(false).
-            SetLeftSideLamps(3).SetLeftSideChandelierOn(false);
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(5000);
-
-        lustra2.SwitchOnChandelier(); lustra2.PrintInfo();
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(10000);
-
-        lustra2.SwitchOffLeftLamps(); lustra2.PrintInfo();
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(4000);
-
-        lustra2.SwitchOnLeftLamps(); lustra2.PrintInfo();
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(6000);
-
-        lustra2.SwitchOffChandelier(); lustra2.PrintInfo();
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(8000);
-
-        lustra2.SwitchOnRightLamps(); lustra2.PrintInfo();
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(4000);
-
-        lustra2.SwitchOffRightLamps(); lustra2.PrintInfo();
-        GetterShowCaseTask::DisplayChandelierFields(&lustra2); Sleep(8000);
-    }
-    catch (const string& message) {
-        cerr << "\n" << message << "\n";
-    }
-
     AlarmClock myNewAlarmClock;
     myNewAlarmClock.SetTime(); Sleep(10000);
     myNewAlarmClock.SetAlarm(); Sleep(10000);
@@ -1373,34 +753,6 @@ int main()
     myNewAlarmClock.MoveHands(false); Sleep(10000);
     myNewAlarmClock.PrintInfo();
     myNewAlarmClock.RunClock(); Sleep(120000);
-
-    AlarmClock anotherAlarmClock;
-    try {
-        anotherAlarmClock.Set24HourFormat(false).
-            SetHours(10).SetMinutes(35).SetSeconds().
-            SetAlarmActive(true).SetAlarmHours(10).SetAlarmMinutes(38).
-            SetAM(false).SetAlarmAM(false);
-        GetterShowCaseTask::DisplayAlarmClockFields(&anotherAlarmClock);
-        Sleep(10000);
-
-        anotherAlarmClock.SetAlarmActive(false).MoveHands(false);
-        GetterShowCaseTask::DisplayAlarmClockFields(&anotherAlarmClock);
-        Sleep(10000);
-
-        anotherAlarmClock.SetAlarmActive(true).MoveHands(true);
-        GetterShowCaseTask::DisplayAlarmClockFields(&anotherAlarmClock);
-        Sleep(10000);
-
-        anotherAlarmClock.Set24HourFormat(true).
-            SetHours(23).SetMinutes(21).SetSeconds(29).
-            SetAlarmHours(23).SetAlarmMinutes(23);
-        system("cls");
-        anotherAlarmClock.PrintInfo();
-        anotherAlarmClock.RunClock(); Sleep(120000);
-    }
-    catch (const string& message) {
-        cerr << "\n" << message << "\n";
-    }
 
     Telescope myTelescope;
     myTelescope.InputTelescopeData();
@@ -1414,42 +766,6 @@ int main()
     myTelescope.PrintInfo("Установлення аксесуарів"); Sleep(20000);
     myTelescope.FocusTelescope();
     myTelescope.PrintInfo("Спостереження з великим збільшенням"); Sleep(30000);
-
-    Telescope newTelescope;
-    try {
-        GetterShowCaseTask::DisplayTelescopeFields(&newTelescope);
-        Sleep(15000);
-        system("cls");
-
-        newTelescope.SetBrand("Celestron");
-        newTelescope.SetModel("AstroMaster 130");
-        newTelescope.SetOpticalDesign("Рефлектор Ньютона");
-        newTelescope.SetAperture("130 мм");
-        newTelescope.SetFocalLength("750 мм");
-        newTelescope.SetMountType("Екваторіальне з автостеженням");
-        newTelescope.SetEyepiece("Стандартний окуляр 10 мм");
-        newTelescope.SetterFilter("Світло-жовтий");
-        newTelescope.SetIsAimed();
-        newTelescope.SetIsFocused();
-        newTelescope.SetSkyObject("Місяць біля Сатурна, Нептуна, Урана і "
-            "Плеяд");
-        newTelescope.PrintInfo("");
-        GetterShowCaseTask::DisplayTelescopeFields(&newTelescope);
-        Sleep(15000);
-        system("cls");
-
-        newTelescope.SetIsAimed(false);
-        newTelescope.SetIsFocused(false);
-        newTelescope.SetFilter("Сонячний");
-        newTelescope.SetSkyObject("Сонце");
-        newTelescope.FocusTelescope();
-        newTelescope.PrintInfo("DANGER");
-        GetterShowCaseTask::DisplayTelescopeFields(&newTelescope);
-        Sleep(30000);
-    }
-    catch (const string& message) {
-        cerr << "\n" << message << "\n";
-    }
 
     WaterBottle oneBottle;
     oneBottle.InputBottleData();
@@ -1477,50 +793,14 @@ int main()
     oneBottle.CloseBottle();
     oneBottle.PrintInfo("Закриваємо кришкою"); Sleep(30000);
 
-    WaterBottle anotherBottle;
-    try {
-        GetterShowCaseTask::DisplayWaterBottleFields(&anotherBottle);
-        Sleep(15000);
-        system("cls");
-
-        anotherBottle.SetBrand("AquaLife");
-        anotherBottle.SetProducer("Миргородський завод мінеральних вод");
-        anotherBottle.SetCapacity(5.0f);
-        anotherBottle.SetCurrentVolume(5.0f);
-        anotherBottle.SetExpirationDate("05.06.26");
-        anotherBottle.SetMineralization("300-500 мг/л");
-        anotherBottle.SetMaterial("Харчовий пластик");
-        anotherBottle.SetIsExpired(false);
-        anotherBottle.SetIsOpened(false);
-        anotherBottle.SetIsBeingPoured(false);
-        anotherBottle.SetIsWiped(false);
-        anotherBottle.PrintInfo("Принесли з магазину");
-        GetterShowCaseTask::DisplayWaterBottleFields(&anotherBottle);
-        Sleep(20000);
-        system("cls");
-
-        anotherBottle.CheckExpiration();
-        anotherBottle.WipeBottle();
-        anotherBottle.PrintInfo("Ще раз перевірили дату, протремо");
-        GetterShowCaseTask::DisplayWaterBottleFields(&anotherBottle);
-        Sleep(20000);
-        system("cls");
-    }
-    catch (const string& message) {
-        cerr << "\n" << message << "\n";
-    }
-
     Car myDreamCar;
     myDreamCar.InputCarData();
     myDreamCar.PrintInfo();
     myDreamCar.UpdateOdometer(1000);
-    myDreamCar.PrintInfo();
+    myDreamCar.PrintInfo();;
     myDreamCar.IncrementOdometer(400);
     myDreamCar.FillGasTank(10);
     myDreamCar.PrintInfo();
-
-    Car myGirlfriendCar;
-    GetterShowCaseTask::DisplayCarFields(&myGirlfriendCar);
 
     return 0;
 }
